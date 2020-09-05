@@ -1,0 +1,20 @@
+version: '3'
+services:
+  firestore:
+    container_name: firestore
+    command: --host 0.0.0.0 --functions_emulator golangfunction:8020
+    ports:
+    - 8080:8080
+    build:
+      context: ./
+      dockerfile: emulator.Dockerfile
+  golangfunction:
+    container_name: golangfunction
+    ports:
+    - 8020:8020
+    build:
+      context: ./
+      dockerfile: function.Dockerfile
+
+
+
