@@ -13,6 +13,37 @@ import (
 
 func main() {
 
+
+
+	go func() {
+		ctx := context.Background()
+
+		firestoreClient, err := firestore.NewClient(ctx, "mammay-play-test")
+		if err != nil {
+			log.Fatalf("firestore.NewClient: %v", err)
+		}
+		defer firestoreClient.Close()
+
+		if _, err := firestoreClient.Collection("skills").NewDoc().Create(ctx, map[string]interface{}{
+			"skill":     "Running",
+			"timestamp": firestore.ServerTimestamp,
+		}); err != nil {
+			log.Fatalf("firestoreClient.Collection.NewDoc().Set: %v", err)
+		}
+
+		doc := firestoreClient.Doc("jimmy/stins")
+		doc.Set(ctx, map[string]interface{}{
+			"skill":     "Running",
+			"timestamp": firestore.ServerTimestamp,
+		})
+		val, err := doc.Get(ctx)
+		if err != nil {
+			log.Fatalf("firestoreClient.Get: %v", err)
+		}
+		log.Println(val.Data())
+	}()
+
+
 	event := fsemu.EmuResource{ProjectId: "mammay-play-test", Address: "http://localhost:8080"}
 	emuRegisters := []fsemu.EmuRegister{{
 		TriggerFn:    WriteSkills,
@@ -27,31 +58,6 @@ func main() {
 	if err := funcframework.Start("6000"); err != nil {
 		panic(err)
 	}
-
-	ctx := context.Background()
-
-	firestoreClient, err := firestore.NewClient(ctx, "mammay-play-test")
-	if err != nil {
-		log.Fatalf("firestore.NewClient: %v", err)
-	}
-
-	if _, err := firestoreClient.Collection("skills").NewDoc().Create(ctx, map[string]interface{}{
-		"skill":     "Running",
-		"timestamp": firestore.ServerTimestamp,
-	}); err != nil {
-		log.Fatalf("firestoreClient.Collection.NewDoc().Set: %v", err)
-	}
-
-	doc := firestoreClient.Doc("jimmy/stins")
-	doc.Set(ctx, map[string]interface{}{
-		"skill":     "Running",
-		"timestamp": firestore.ServerTimestamp,
-	})
-	val, err := doc.Get(ctx)
-	if err != nil {
-		log.Fatalf("firestoreClient.Get: %v", err)
-	}
-	log.Println(val.Data())
 
 }
 
