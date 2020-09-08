@@ -13,12 +13,10 @@ import (
 
 func main() {
 
-
-
 	go func() {
 		ctx := context.Background()
 
-		firestoreClient, err := firestore.NewClient(ctx, "mammay-play-test")
+		firestoreClient, err := firestore.NewClient(ctx, "dummy")
 		if err != nil {
 			log.Fatalf("firestore.NewClient: %v", err)
 		}
@@ -30,38 +28,21 @@ func main() {
 		}); err != nil {
 			log.Fatalf("firestoreClient.Collection.NewDoc().Set: %v", err)
 		}
-
-		doc := firestoreClient.Doc("jimmy/stins")
-		doc.Set(ctx, map[string]interface{}{
-			"skill":     "Running",
-			"timestamp": firestore.ServerTimestamp,
-		})
-		val, err := doc.Get(ctx)
-		if err != nil {
-			log.Fatalf("firestoreClient.Get: %v", err)
-		}
-		log.Println(val.Data())
 	}()
-
-
-	event := fsemu.EmuResource{ProjectId: "mammay-play-test", Address: "http://localhost:8080"}
+	event := fsemu.EmuResource{ProjectId: "dummy", Address: "http://localhost:8080"}
 	emuRegisters := []fsemu.EmuRegister{{
 		TriggerFn:    WriteSkills,
 		TriggerType:  fsemu.FirestoreOnWrite,
 		ResourcePath: "skills/{id}",
 	}}
-
 	if err := event.RegisterToEmu(emuRegisters); err != nil {
 		panic(err)
 	}
-
 	if err := funcframework.Start("6000"); err != nil {
 		panic(err)
 	}
-
 }
 
-// FirestoreEvent is the payload of a Firestore event.
 type FirestoreEvent struct {
 	OldValue   FirestoreValue `json:"oldValue"`
 	Value      FirestoreValue `json:"value"`
@@ -70,12 +51,8 @@ type FirestoreEvent struct {
 	} `json:"updateMask"`
 }
 
-// FirestoreValue holds Firestore fields.
 type FirestoreValue struct {
-	CreateTime time.Time `json:"createTime"`
-	// Fields is the data for this value. The type depends on the format of your
-	// database. Log the interface{} value and inspect the result to see a JSON
-	// representation of your database fields.
+	CreateTime time.Time   `json:"createTime"`
 	Fields     interface{} `json:"fields"`
 	Name       string      `json:"name"`
 	UpdateTime time.Time   `json:"updateTime"`
